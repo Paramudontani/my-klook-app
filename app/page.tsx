@@ -38,7 +38,7 @@ export default function Home() {
   const [quantity, setQuantity] = useState<number>(1);
   const [bookingDate, setBookingDate] = useState<string>('2026-09-15');
 
-  // Filter Products
+  // Filter Products (ตรวจสอบความถูกต้องเรียบร้อย)
   const filteredProducts = ALL_PRODUCTS.filter((item) => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     const matchesSearch =
