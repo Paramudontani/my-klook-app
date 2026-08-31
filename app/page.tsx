@@ -27,31 +27,32 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'home' | 'bookings'>('home');
   
   // Modals
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [emailInput, setEmailInput] = useState('');
+  const [emailInput, setEmailInput] = useState<string>('');
   
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   
   // Booking Form State
-  const [quantity, setQuantity] = useState(1);
-  const [bookingDate, setBookingDate] = useState('2026-09-15');
+  const [quantity, setQuantity] = useState<number>(1);
+  const [bookingDate, setBookingDate] = useState<string>('2026-09-15');
 
   // Filter Products
-  const filteredProducts = ALL_PRODUCTS.filter(item => {
+  const filteredProducts = ALL_PRODUCTS.filter((item) => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.location.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailInput) return;
+    if (!emailInput.trim()) return;
     login(emailInput);
     setIsAuthOpen(false);
-    alert(`เข้าสู่ระบบสำเร็จในชื่อ: ${emailInput}`);
+    setEmailInput('');
   };
 
   const handleAddToCart = () => {
@@ -73,6 +74,11 @@ export default function Home() {
     alert('🎉 ชำระเงินสำเร็จ! รายการจองของคุณถูกบันทึกเรียบร้อยแล้ว');
   };
 
+  const handleCategorySelect = (categoryId: string) => {
+    setActiveTab('home');
+    setSelectedCategory(categoryId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       
@@ -80,18 +86,18 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-8">
           <button 
-            onClick={() => { setActiveTab('home'); setSelectedCategory('all'); }} 
-            className="text-2xl font-black text-orange-500 tracking-wider"
+            onClick={() => handleCategorySelect('all')} 
+            className="text-2xl font-black text-orange-500 tracking-wider hover:opacity-90 transition-opacity"
           >
             KLOOK
           </button>
           
           <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
-            <button onClick={() => { setActiveTab('home'); setSelectedCategory('theme-park'); }} className="hover:text-orange-500">สวนสนุก & กิจกรรม</button>
-            <button onClick={() => { setActiveTab('home'); setSelectedCategory('hotel'); }} className="hover:text-orange-500">โรงแรม & ที่พัก</button>
-            <button onClick={() => { setActiveTab('home'); setSelectedCategory('car'); }} className="hover:text-orange-500">เช่ารถยนต์</button>
-            <button onClick={() => { setActiveTab('home'); setSelectedCategory('transport'); }} className="hover:text-orange-500">ตั๋วรถไฟ JR</button>
-            <button onClick={() => { setActiveTab('home'); setSelectedCategory('wifi'); }} className="hover:text-orange-500">SIM Card & Wi-Fi</button>
+            <button onClick={() => handleCategorySelect('theme-park')} className="hover:text-orange-500 transition-colors">สวนสนุก & กิจกรรม</button>
+            <button onClick={() => handleCategorySelect('hotel')} className="hover:text-orange-500 transition-colors">โรงแรม & ที่พัก</button>
+            <button onClick={() => handleCategorySelect('car')} className="hover:text-orange-500 transition-colors">เช่ารถยนต์</button>
+            <button onClick={() => handleCategorySelect('transport')} className="hover:text-orange-500 transition-colors">ตั๋วรถไฟ JR</button>
+            <button onClick={() => handleCategorySelect('wifi')} className="hover:text-orange-500 transition-colors">SIM Card & Wi-Fi</button>
           </nav>
         </div>
 
@@ -99,7 +105,9 @@ export default function Home() {
           {user && (
             <button 
               onClick={() => setActiveTab('bookings')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${activeTab === 'bookings' ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:text-orange-500'}`}
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                activeTab === 'bookings' ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:text-orange-500'
+              }`}
             >
               การจองของฉัน ({orders.length})
             </button>
@@ -107,11 +115,12 @@ export default function Home() {
 
           <button 
             onClick={() => setIsCartOpen(true)}
-            className="relative p-2 text-gray-600 hover:text-orange-500"
+            className="relative p-2 text-gray-600 hover:text-orange-500 transition-colors"
+            aria-label="ตะกร้าสินค้า"
           >
             <ShoppingBag className="w-6 h-6" />
             {cart.length > 0 && (
-              <span className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                 {cart.length}
               </span>
             )}
@@ -120,8 +129,8 @@ export default function Home() {
           {user ? (
             <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-full">
               <User className="w-4 h-4 text-orange-500" />
-              <span className="font-bold text-gray-700 text-xs">{user.name}</span>
-              <button onClick={logout} title="ออกจากระบบ" className="text-gray-400 hover:text-red-500 ml-1">
+              <span className="font-bold text-gray-700 text-xs">{user.name || user.email}</span>
+              <button onClick={logout} title="ออกจากระบบ" className="text-gray-400 hover:text-red-500 ml-1 transition-colors">
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
@@ -147,7 +156,7 @@ export default function Home() {
               
               <div className="mt-8 bg-white rounded-2xl p-2 shadow-2xl flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto text-gray-700">
                 <div className="flex-1 flex items-center px-3 gap-2">
-                  <Search className="w-5 h-5 text-gray-400" />
+                  <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <input 
                     type="text" 
                     value={searchQuery}
@@ -199,45 +208,51 @@ export default function Home() {
               </h2>
               <p className="text-sm text-gray-500 mb-6">คลิกรายการเพื่อดูรายละเอียด เลือกวัน และสั่งจองได้ทันที</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredProducts.map((product) => (
-                  <div 
-                    key={product.id}
-                    onClick={() => { setSelectedProduct(product); setQuantity(1); }}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer"
-                  >
-                    <div className="relative h-48">
-                      <img src={product.image} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow">
-                        {product.tag}
-                      </span>
-                    </div>
-
-                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <span className="text-xs text-gray-400 flex items-center gap-1 mb-1">
-                          <MapPin className="w-3 h-3" /> {product.location}
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+                  <p className="text-gray-400">ไม่พบรายการที่คุณค้นหา</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredProducts.map((product) => (
+                    <div 
+                      key={product.id}
+                      onClick={() => { setSelectedProduct(product); setQuantity(1); }}
+                      className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer"
+                    >
+                      <div className="relative h-48 bg-gray-100">
+                        <img src={product.image} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow">
+                          {product.tag}
                         </span>
-                        <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-snug group-hover:text-orange-500">
-                          {product.title}
-                        </h3>
                       </div>
 
-                      <div className="pt-2 border-t border-gray-50">
-                        <div className="flex items-center gap-1 text-xs mb-1">
-                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          <span className="font-bold">{product.rating}</span>
-                          <span className="text-gray-400">({product.reviews.toLocaleString()})</span>
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          <span className="text-xs text-gray-400 flex items-center gap-1 mb-1">
+                            <MapPin className="w-3 h-3" /> {product.location}
+                          </span>
+                          <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors">
+                            {product.title}
+                          </h3>
                         </div>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xs text-gray-400 line-through">฿{product.originalPrice.toLocaleString()}</span>
-                          <span className="text-lg font-black text-orange-500">฿{product.price.toLocaleString()}</span>
+
+                        <div className="pt-2 border-t border-gray-50">
+                          <div className="flex items-center gap-1 text-xs mb-1">
+                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                            <span className="font-bold">{product.rating}</span>
+                            <span className="text-gray-400">({product.reviews.toLocaleString()})</span>
+                          </div>
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-xs text-gray-400 line-through">฿{product.originalPrice.toLocaleString()}</span>
+                            <span className="text-lg font-black text-orange-500">฿{product.price.toLocaleString()}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </>
@@ -249,12 +264,12 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">ประวัติการสั่งซื้อและวอเชอร์ของคุณ</h2>
           
           {orders.length === 0 ? (
-            <div className="bg-white p-12 rounded-2xl text-center shadow-sm">
+            <div className="bg-white p-12 rounded-2xl text-center shadow-sm border border-gray-100">
               <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">คุณยังไม่มีรายการจองในระบบ</p>
               <button 
                 onClick={() => setActiveTab('home')} 
-                className="mt-4 bg-orange-500 text-white px-6 py-2 rounded-xl font-bold hover:bg-orange-600"
+                className="mt-4 bg-orange-500 text-white px-6 py-2 rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-sm"
               >
                 เลือกซื้อกิจกรรมเลย
               </button>
@@ -264,7 +279,7 @@ export default function Home() {
               {orders.map((item, index) => (
                 <div key={index} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
                   <div className="flex gap-4">
-                    <img src={item.product.image} alt={item.product.title} className="w-24 h-24 object-cover rounded-xl" />
+                    <img src={item.product.image} alt={item.product.title} className="w-24 h-24 object-cover rounded-xl bg-gray-100" />
                     <div>
                       <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">ชำระเงินเรียบร้อย</span>
                       <h3 className="font-bold text-gray-900 text-base mt-1">{item.product.title}</h3>
@@ -272,9 +287,12 @@ export default function Home() {
                       <p className="text-xs text-gray-500">จำนวน: {item.quantity} รายการ</p>
                     </div>
                   </div>
-                  <div className="text-right flex flex-col justify-between">
+                  <div className="text-right flex flex-col justify-between items-end sm:items-end">
                     <span className="text-xl font-black text-orange-500">฿{(item.product.price * item.quantity).toLocaleString()}</span>
-                    <button onClick={() => alert(`QR Code วอเชอร์ของคุณคือ: KLOOK-VO-${Math.floor(Math.random() * 899999 + 100000)}`)} className="bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-gray-800">
+                    <button 
+                      onClick={() => alert(`QR Code วอเชอร์ของคุณคือ: KLOOK-VO-${Math.floor(Math.random() * 899999 + 100000)}`)} 
+                      className="bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors mt-2 sm:mt-0"
+                    >
                       แสดง QR วอเชอร์
                     </button>
                   </div>
@@ -294,7 +312,7 @@ export default function Home() {
             </button>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <img src={selectedProduct.image} alt={selectedProduct.title} className="w-full sm:w-48 h-36 object-cover rounded-xl" />
+              <img src={selectedProduct.image} alt={selectedProduct.title} className="w-full sm:w-48 h-36 object-cover rounded-xl bg-gray-100" />
               <div>
                 <span className="bg-orange-100 text-orange-600 text-xs font-bold px-2.5 py-0.5 rounded">{selectedProduct.tag}</span>
                 <h3 className="font-bold text-lg text-gray-900 mt-1">{selectedProduct.title}</h3>
@@ -317,9 +335,9 @@ export default function Home() {
               <div className="flex items-center justify-between py-2 border-y border-gray-100">
                 <span className="font-bold text-sm">จำนวน (บัตร/ห้อง/คัน)</span>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-lg border font-bold text-lg">-</button>
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-lg border font-bold text-lg hover:bg-gray-100">-</button>
                   <span className="font-bold">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 rounded-lg border font-bold text-lg">+</button>
+                  <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 rounded-lg border font-bold text-lg hover:bg-gray-100">+</button>
                 </div>
               </div>
 
@@ -355,9 +373,9 @@ export default function Home() {
               {cart.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">ยังไม่มีสินค้าในตะกร้า</div>
               ) : (
-                <div className="mt-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                <div className="mt-4 space-y-3 max-h-[60vh] overflow-y-auto pr-1">
                   {cart.map((item, index) => (
-                    <div key={index} className="p-3 border rounded-xl flex justify-between gap-3 bg-gray-50">
+                    <div key={index} className="p-3 border border-gray-100 rounded-xl flex justify-between gap-3 bg-gray-50">
                       <div>
                         <h4 className="text-xs font-bold line-clamp-1">{item.product.title}</h4>
                         <p className="text-xs text-gray-500">วันที่: {item.date}</p>
@@ -379,7 +397,7 @@ export default function Home() {
                 </div>
                 <button 
                   onClick={handleCheckout}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-md"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-md transition-all active:scale-95"
                 >
                   สั่งซื้อและชำระเงินทันที
                 </button>
@@ -426,7 +444,7 @@ export default function Home() {
 
               <button 
                 type="submit"
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all shadow-md"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95"
               >
                 {authMode === 'login' ? 'เข้าสู่ระบบ' : 'ยืนยันการสมัครสมาชิก'}
               </button>
