@@ -41,7 +41,7 @@ export default function Home() {
 // Filter Products (Validates selected category and matches search query string)
 const filteredProducts = ALL_PRODUCTS.filter((item) => {
   const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    const matchesSearch =
+    const matchesSearch = 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.location.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
