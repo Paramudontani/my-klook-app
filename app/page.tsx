@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ALL_PRODUCTS, Product } from '../data/klookData';
 import { 
-  Search, Globe, ShoppingBag, Star, MapPin, Compass, Ticket, Hotel, Train, 
-  Palmtree, Car, Wifi, X, Mail, Lock, User, LogOut, CheckCircle2, Calendar, CreditCard, ChevronRight
+  Search, ShoppingBag, Star, MapPin, Compass, Ticket, Hotel, Train, 
+  Car, Wifi, X, User, LogOut
 } from 'lucide-react';
 
 export default function Home() {
@@ -65,7 +65,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       
-      {/* 1. NAVBAR */}
+      {/* NAVBAR */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-8">
           <button 
@@ -85,7 +85,6 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4 text-sm font-medium">
-          {/* ปุ่มประวัติการจอง */}
           {user && (
             <button 
               onClick={() => setActiveTab('bookings')}
@@ -95,7 +94,6 @@ export default function Home() {
             </button>
           )}
 
-          {/* ปุ่มตะกร้า */}
           <button 
             onClick={() => setIsCartOpen(true)}
             className="relative p-2 text-gray-600 hover:text-orange-500"
@@ -108,7 +106,6 @@ export default function Home() {
             )}
           </button>
 
-          {/* ระบบโปรไฟล์ / ล็อกอิน */}
           {user ? (
             <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-full">
               <User className="w-4 h-4 text-orange-500" />
@@ -128,10 +125,9 @@ export default function Home() {
         </div>
       </header>
 
-      {/* TAB 1: MAIN HOME PAGE */}
+      {/* TAB 1: HOME PAGE */}
       {activeTab === 'home' && (
         <>
-          {/* HERO BANNER & SEARCH BAR */}
           <section className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white py-14 px-4 text-center">
             <div className="max-w-4xl mx-auto space-y-4">
               <h1 className="text-3xl sm:text-5xl font-extrabold">ค้นหาและจองประสบการณ์เที่ยวทั่วโลก</h1>
@@ -157,7 +153,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* CATEGORIES FILTER */}
           <section className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
               {[
@@ -185,7 +180,6 @@ export default function Home() {
               })}
             </div>
 
-            {/* PRODUCT GRID */}
             <div className="mt-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-1">
                 {selectedCategory === 'all' ? 'รายการแนะนำยอดนิยมทั้งหมด' : `รายการในหมวดหมู่: ${selectedCategory}`}
@@ -278,7 +272,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* MODAL 1: PRODUCT DETAIL & BOOKING */}
+      {/* MODAL 1: PRODUCT DETAIL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-2xl rounded-2xl p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -333,7 +327,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL 2: CART DRAWER */}
+      {/* MODAL 2: CART */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
           <div className="bg-white w-full max-w-md h-full p-6 relative flex flex-col justify-between shadow-2xl">
@@ -382,7 +376,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL 3: LOGIN / REGISTER */}
+      {/* MODAL 3: AUTH */}
       {isAuthOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl p-6 relative shadow-2xl">
