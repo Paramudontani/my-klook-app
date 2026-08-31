@@ -1,175 +1,440 @@
-import React from 'react';
-import { Search, Globe, ShoppingBag, Star, MapPin } from 'lucide-react';
+'use client';
 
-// ข้อมูลจำลองกิจกรรมยอดนิยม
-const POPULAR_ACTIVITIES = [
-  {
-    id: 1,
-    title: 'บัตรเข้าชมสวนสนุก สวนน้ำ และธีมพาร์ค ยูนิเวอร์แซล สตูดิโอ เจแปน (USJ)',
-    location: 'โอซาก้า, ญี่ปุ่น',
-    rating: 4.8,
-    reviews: '52,410',
-    price: '2,150',
-    originalPrice: '2,400',
-    image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
-    tag: 'ขายดีที่สุด'
-  },
-  {
-    id: 2,
-    title: 'บัตรเข้าชมจุดชมวิว Shibuya Sky ตั๋วเข้าชมล่วงหน้าราคาพิเศษ',
-    location: 'โตเกียว, ญี่ปุ่น',
-    rating: 4.9,
-    reviews: '38,120',
-    price: '580',
-    originalPrice: '650',
-    image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
-    tag: 'ยอดนิยม'
-  },
-  {
-    id: 3,
-    title: 'ทัวร์วันเดียว เที่ยวเกาะพีพี เกาะไข่ และมาหยา โดยเรือสปีดโบ๊ท',
-    location: 'ภูเก็ต, ไทย',
-    rating: 4.7,
-    reviews: '12,940',
-    price: '1,290',
-    originalPrice: '1,800',
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=600&q=80',
-    tag: 'ลดพิเศษ'
-  },
-  {
-    id: 4,
-    title: 'บัตรเข้าชมสวนสนุก Hong Kong Disneyland ลิขสิทธิ์แท้',
-    location: 'ฮ่องกง',
-    rating: 4.8,
-    reviews: '41,050',
-    price: '2,890',
-    originalPrice: '3,100',
-    image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80',
-    tag: 'ขายดีที่สุด'
-  }
-];
+import React, { useState } from 'react';
+import { useApp } from '@/context/AppContext';
+import { ALL_PRODUCTS, Product } from '@/data/klookData';
+import { 
+  Search, Globe, ShoppingBag, Star, MapPin, Compass, Ticket, Hotel, Train, 
+  Palmtree, Car, Wifi, X, Mail, Lock, User, LogOut, CheckCircle2, Calendar, CreditCard, ChevronRight
+} from 'lucide-react';
 
 export default function Home() {
+  const { user, login, logout, cart, addToCart, removeFromCart, checkout, orders } = useApp();
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'home' | 'bookings'>('home');
+  
+  // Modals
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [emailInput, setEmailInput] = useState('');
+  
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  
+  // Booking Form State
+  const [quantity, setQuantity] = useState(1);
+  const [bookingDate, setBookingDate] = useState('2026-09-15');
+
+  // Filter Products
+  const filteredProducts = ALL_PRODUCTS.filter(item => {
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          item.location.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput) return;
+    login(emailInput);
+    setIsAuthOpen(false);
+    alert(`เข้าสู่ระบบสำเร็จในชื่อ: ${emailInput}`);
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedProduct) return;
+    addToCart(selectedProduct, quantity, bookingDate);
+    setSelectedProduct(null);
+    setIsCartOpen(true);
+  };
+
+  const handleCheckout = () => {
+    if (!user) {
+      alert('กรุณาเข้าสู่ระบบก่อนทำการชำระเงิน');
+      setIsAuthOpen(true);
+      return;
+    }
+    checkout();
+    setIsCartOpen(false);
+    setActiveTab('bookings');
+    alert('🎉 ชำระเงินสำเร็จ! รายการจองของคุณถูกบันทึกเรียบร้อยแล้ว');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       
-      {/* 1. HEADER / NAVBAR */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
+      {/* 1. NAVBAR */}
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-8">
-          <span className="text-2xl font-black text-orange-500 tracking-wider cursor-pointer">
+          <button 
+            onClick={() => { setActiveTab('home'); setSelectedCategory('all'); }} 
+            className="text-2xl font-black text-orange-500 tracking-wider"
+          >
             KLOOK
-          </span>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <a href="#" className="hover:text-orange-500 transition-colors">เที่ยวไทย</a>
-            <a href="#" className="hover:text-orange-500 transition-colors">ตั๋วรถไฟ / ตั๋วเครื่องบิน</a>
-            <a href="#" className="hover:text-orange-500 transition-colors">โรงแรม & ที่พัก</a>
-            <a href="#" className="hover:text-orange-500 transition-colors">บัตรเข้าชมสถานที่ท่องเที่ยว</a>
+          </button>
+          
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
+            <button onClick={() => { setActiveTab('home'); setSelectedCategory('theme-park'); }} className="hover:text-orange-500">สวนสนุก & กิจกรรม</button>
+            <button onClick={() => { setActiveTab('home'); setSelectedCategory('hotel'); }} className="hover:text-orange-500">โรงแรม & ที่พัก</button>
+            <button onClick={() => { setActiveTab('home'); setSelectedCategory('car'); }} className="hover:text-orange-500">เช่ารถยนต์</button>
+            <button onClick={() => { setActiveTab('home'); setSelectedCategory('transport'); }} className="hover:text-orange-500">ตั๋วรถไฟ JR</button>
+            <button onClick={() => { setActiveTab('home'); setSelectedCategory('wifi'); }} className="hover:text-orange-500">SIM Card & Wi-Fi</button>
           </nav>
         </div>
 
         <div className="flex items-center gap-4 text-sm font-medium">
-          <button className="hidden sm:flex items-center gap-1 text-gray-600 hover:text-orange-500">
-            <Globe className="w-4 h-4" />
-            <span>THB / TH</span>
+          {/* ปุ่มประวัติการจอง */}
+          {user && (
+            <button 
+              onClick={() => setActiveTab('bookings')}
+              className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${activeTab === 'bookings' ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:text-orange-500'}`}
+            >
+              การจองของฉัน ({orders.length})
+            </button>
+          )}
+
+          {/* ปุ่มตะกร้า */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative p-2 text-gray-600 hover:text-orange-500"
+          >
+            <ShoppingBag className="w-6 h-6" />
+            {cart.length > 0 && (
+              <span className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {cart.length}
+              </span>
+            )}
           </button>
-          <button className="text-gray-600 hover:text-orange-500">
-            <ShoppingBag className="w-5 h-5" />
-          </button>
-          <button className="bg-orange-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-orange-600 transition-colors shadow-sm">
-            เข้าสู่ระบบ / สมัครสมาชิก
-          </button>
+
+          {/* ระบบโปรไฟล์ / ล็อกอิน */}
+          {user ? (
+            <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-full">
+              <User className="w-4 h-4 text-orange-500" />
+              <span className="font-bold text-gray-700 text-xs">{user.name}</span>
+              <button onClick={logout} title="ออกจากระบบ" className="text-gray-400 hover:text-red-500 ml-1">
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsAuthOpen(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-full font-semibold transition-all shadow-md active:scale-95"
+            >
+              เข้าสู่ระบบ / สมัครสมาชิก
+            </button>
+          )}
         </div>
       </header>
 
-      {/* 2. HERO BANNER + SEARCH BAR */}
-      <section className="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white py-16 px-4 text-center">
-        <div className="max-w-4xl mx-auto space-y-4">
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            ปลดล็อกประสบการณ์เที่ยวทั่วโลก
-          </h1>
-          <p className="text-orange-100 text-base sm:text-lg">
-            ค้นหากิจกรรม บัตรเข้าชม โรงแรม และรถเช่าราคาพิเศษ
-          </p>
+      {/* TAB 1: MAIN HOME PAGE */}
+      {activeTab === 'home' && (
+        <>
+          {/* HERO BANNER & SEARCH BAR */}
+          <section className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white py-14 px-4 text-center">
+            <div className="max-w-4xl mx-auto space-y-4">
+              <h1 className="text-3xl sm:text-5xl font-extrabold">ค้นหาและจองประสบการณ์เที่ยวทั่วโลก</h1>
+              <p className="text-orange-100 text-base">ตั๋วสวนสนุก โรงแรมหรู รถเช่า และซิมการ์ด ครบจบในที่เดียว</p>
 
-          <div className="mt-8 bg-white rounded-2xl p-2 sm:p-3 shadow-xl flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto text-gray-700">
-            <div className="flex-1 flex items-center px-3 gap-2 border-b sm:border-b-0 sm:border-r border-gray-200 py-2 sm:py-0">
-              <Search className="w-5 h-5 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="ไปเที่ยวที่ไหนดี? (เช่น โตเกียว, ภูเก็ต, บานาฮิลล์)" 
-                className="w-full bg-transparent focus:outline-none text-sm sm:text-base"
-              />
-            </div>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-md">
-              ค้นหา
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. POPULAR ACTIVITIES SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">กิจกรรมยอดนิยมฮิตติดเทรนด์</h2>
-            <p className="text-sm text-gray-500 mt-1">จุดหมายปลายทางและประสบการณ์สุดพิเศษที่คุณไม่ควรพลาด</p>
-          </div>
-          <a href="#" className="text-sm font-bold text-orange-500 hover:underline">ดูทั้งหมด →</a>
-        </div>
-
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {POPULAR_ACTIVITIES.map((activity) => (
-            <div 
-              key={activity.id} 
-              className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer"
-            >
-              {/* Image & Badge */}
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={activity.image} 
-                  alt={activity.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-md">
-                  {activity.tag}
-                </span>
-              </div>
-
-              {/* Content */}
-              <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                <div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                    <span>{activity.location}</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors">
-                    {activity.title}
-                  </h3>
+              <div className="mt-8 bg-white rounded-2xl p-2 shadow-2xl flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto text-gray-700">
+                <div className="flex-1 flex items-center px-3 gap-2">
+                  <Search className="w-5 h-5 text-gray-400" />
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="พิมพ์ค้นหา (เช่น USJ, โตเกียว, โรงแรม, รถเช่า, SIM)..." 
+                    className="w-full bg-transparent focus:outline-none text-sm py-2"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-gray-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
+              </div>
+            </div>
+          </section>
 
-                <div>
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 text-xs mb-2">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span className="font-bold text-gray-800">{activity.rating}</span>
-                    <span className="text-gray-400">({activity.reviews})</span>
-                  </div>
+          {/* CATEGORIES FILTER */}
+          <section className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
+              {[
+                { id: 'all', name: 'ทั้งหมด', icon: Compass },
+                { id: 'theme-park', name: 'สวนสนุก & กิจกรรม', icon: Ticket },
+                { id: 'hotel', name: 'โรงแรม & ที่พัก', icon: Hotel },
+                { id: 'car', name: 'เช่ารถยนต์', icon: Car },
+                { id: 'transport', name: 'ตั๋วรถไฟ JR', icon: Train },
+                { id: 'wifi', name: 'SIM Card & Wi-Fi', icon: Wifi },
+              ].map((cat) => {
+                const Icon = cat.icon;
+                const isActive = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                      isActive ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
 
-                  {/* Price */}
-                  <div className="flex items-baseline gap-2 pt-2 border-t border-gray-50">
-                    <span className="text-xs text-gray-400 line-through">฿{activity.originalPrice}</span>
-                    <div className="text-right">
-                      <span className="text-xs text-gray-500">เริ่มต้น </span>
-                      <span className="text-lg font-bold text-orange-500">฿{activity.price}</span>
+            {/* PRODUCT GRID */}
+            <div className="mt-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                {selectedCategory === 'all' ? 'รายการแนะนำยอดนิยมทั้งหมด' : `รายการในหมวดหมู่: ${selectedCategory}`}
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">คลิกรายการเพื่อดูรายละเอียด เลือกวัน และสั่งจองได้ทันที</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <div 
+                    key={product.id}
+                    onClick={() => { setSelectedProduct(product); setQuantity(1); }}
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer"
+                  >
+                    <div className="relative h-48">
+                      <img src={product.image} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow">
+                        {product.tag}
+                      </span>
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                      <div>
+                        <span className="text-xs text-gray-400 flex items-center gap-1 mb-1">
+                          <MapPin className="w-3 h-3" /> {product.location}
+                        </span>
+                        <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-snug group-hover:text-orange-500">
+                          {product.title}
+                        </h3>
+                      </div>
+
+                      <div className="pt-2 border-t border-gray-50">
+                        <div className="flex items-center gap-1 text-xs mb-1">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <span className="font-bold">{product.rating}</span>
+                          <span className="text-gray-400">({product.reviews.toLocaleString()})</span>
+                        </div>
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-xs text-gray-400 line-through">฿{product.originalPrice.toLocaleString()}</span>
+                          <span className="text-lg font-black text-orange-500">฿{product.price.toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
-          ))}
+          </section>
+        </>
+      )}
+
+      {/* TAB 2: MY BOOKINGS PAGE (หน้าดูรายการจองที่ชำระเงินแล้ว) */}
+      {activeTab === 'bookings' && (
+        <section className="max-w-4xl mx-auto px-4 py-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">ประวัติการสั่งซื้อและวอเชอร์ของคุณ</h2>
+          
+          {orders.length === 0 ? (
+            <div className="bg-white p-12 rounded-2xl text-center shadow-sm">
+              <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">คุณยังไม่มีรายการจองในระบบ</p>
+              <button 
+                onClick={() => setActiveTab('home')} 
+                className="mt-4 bg-orange-500 text-white px-6 py-2 rounded-xl font-bold hover:bg-orange-600"
+              >
+                เลือกซื้อกิจกรรมเลย
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {orders.map((item, index) => (
+                <div key={index} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
+                  <div className="flex gap-4">
+                    <img src={item.product.image} alt={item.product.title} className="w-24 h-24 object-cover rounded-xl" />
+                    <div>
+                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">ชำระเงินเรียบร้อย</span>
+                      <h3 className="font-bold text-gray-900 text-base mt-1">{item.product.title}</h3>
+                      <p className="text-xs text-gray-500 mt-1">วันเดินทาง/ใช้งาน: {item.date}</p>
+                      <p className="text-xs text-gray-500">จำนวน: {item.quantity} รายการ</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col justify-between">
+                    <span className="text-xl font-black text-orange-500">฿{(item.product.price * item.quantity).toLocaleString()}</span>
+                    <button onClick={() => alert(`QR Code วอเชอร์ของคุณคือ: KLOOK-VO-${Math.floor(Math.random() * 899999 + 100000)}`)} className="bg-gray-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-gray-800">
+                      แสดง QR วอเชอร์
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* MODAL 1: PRODUCT DETAIL & BOOKING */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <img src={selectedProduct.image} alt={selectedProduct.title} className="w-full sm:w-48 h-36 object-cover rounded-xl" />
+              <div>
+                <span className="bg-orange-100 text-orange-600 text-xs font-bold px-2.5 py-0.5 rounded">{selectedProduct.tag}</span>
+                <h3 className="font-bold text-lg text-gray-900 mt-1">{selectedProduct.title}</h3>
+                <p className="text-xs text-gray-500 mt-1">{selectedProduct.location}</p>
+                <p className="text-xs text-gray-600 mt-2">{selectedProduct.description}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 border-t border-gray-100 pt-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">ระบุวันเดินทาง / วันเข้าพัก</label>
+                <input 
+                  type="date" 
+                  value={bookingDate} 
+                  onChange={(e) => setBookingDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-500" 
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-y border-gray-100">
+                <span className="font-bold text-sm">จำนวน (บัตร/ห้อง/คัน)</span>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-lg border font-bold text-lg">-</button>
+                  <span className="font-bold">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 rounded-lg border font-bold text-lg">+</button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <p className="text-xs text-gray-400">ราคารวม</p>
+                  <p className="text-2xl font-black text-orange-500">฿{(selectedProduct.price * quantity).toLocaleString()}</p>
+                </div>
+                <button 
+                  onClick={handleAddToCart}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md active:scale-95"
+                >
+                  ใส่ตะกร้าสินค้า
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+      )}
+
+      {/* MODAL 2: CART DRAWER */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
+          <div className="bg-white w-full max-w-md h-full p-6 relative flex flex-col justify-between shadow-2xl">
+            <div>
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <h3 className="text-xl font-bold text-gray-900">ตะกร้าของคุณ ({cart.length})</h3>
+                <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {cart.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">ยังไม่มีสินค้าในตะกร้า</div>
+              ) : (
+                <div className="mt-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                  {cart.map((item, index) => (
+                    <div key={index} className="p-3 border rounded-xl flex justify-between gap-3 bg-gray-50">
+                      <div>
+                        <h4 className="text-xs font-bold line-clamp-1">{item.product.title}</h4>
+                        <p className="text-xs text-gray-500">วันที่: {item.date}</p>
+                        <p className="text-xs text-gray-500">จำนวน: {item.quantity}</p>
+                        <p className="text-sm font-bold text-orange-500 mt-1">฿{(item.product.price * item.quantity).toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => removeFromCart(index)} className="text-red-400 text-xs hover:underline">ลบ</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="border-t border-gray-100 pt-4 space-y-3">
+                <div className="flex justify-between font-bold text-lg">
+                  <span>ราคารวมทั้งหมด</span>
+                  <span className="text-orange-500">฿{cart.reduce((s, i) => s + (i.product.price * i.quantity), 0).toLocaleString()}</span>
+                </div>
+                <button 
+                  onClick={handleCheckout}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-md"
+                >
+                  สั่งซื้อและชำระเงินทันที
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: LOGIN / REGISTER */}
+      {isAuthOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl p-6 relative shadow-2xl">
+            <button onClick={() => setIsAuthOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-2xl font-black text-center text-gray-900 mb-2">
+              {authMode === 'login' ? 'เข้าสู่ระบบ Klook' : 'สมัครสมาชิก Klook'}
+            </h3>
+
+            <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">อีเมลของคุณ</label>
+                <input 
+                  type="email" 
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="name@example.com" 
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">รหัสผ่าน</label>
+                <input 
+                  type="password" 
+                  required
+                  placeholder="••••••••" 
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500" 
+                />
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all shadow-md"
+              >
+                {authMode === 'login' ? 'เข้าสู่ระบบ' : 'ยืนยันการสมัครสมาชิก'}
+              </button>
+            </form>
+
+            <div className="mt-4 text-center text-xs text-gray-500">
+              {authMode === 'login' ? (
+                <p>ยังไม่มีบัญชี? <button onClick={() => setAuthMode('register')} className="text-orange-500 font-bold hover:underline">สมัครสมาชิก</button></p>
+              ) : (
+                <p>มีบัญชีอยู่แล้ว? <button onClick={() => setAuthMode('login')} className="text-orange-500 font-bold hover:underline">เข้าสู่ระบบ</button></p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
