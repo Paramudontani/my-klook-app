@@ -139,12 +139,15 @@ export default function Home() {
       {/* TAB 1: HOME PAGE */}
       {activeTab === 'home' && (
         <>
-          {/* HERO BANNER & SEARCH */}
+        {/* TAB 1: HOME PAGE */}
+      {activeTab === 'home' && (
+        <>
+          {/* HERO BANNER & SEARCH BAR */}
           <section className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white py-14 px-4 text-center">
             <div className="max-w-4xl mx-auto space-y-4">
               <h1 className="text-3xl sm:text-5xl font-extrabold">ค้นหาและจองประสบการณ์เที่ยวทั่วโลก</h1>
               <p className="text-orange-100 text-base">ตั๋วสวนสนุก โรงแรมหรู รถเช่า และซิมการ์ด ครบจบในที่เดียว</p>
-
+              
               <div className="mt-8 bg-white rounded-2xl p-2 shadow-2xl flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto text-gray-700">
                 <div className="flex-1 flex items-center px-3 gap-2">
                   <Search className="w-5 h-5 text-gray-400" />
@@ -242,7 +245,6 @@ export default function Home() {
           </section>
         </>
       )}
-
       {/* TAB 2: MY BOOKINGS PAGE */}
       {activeTab === 'bookings' && (
         <section className="max-w-4xl mx-auto px-4 py-10">
