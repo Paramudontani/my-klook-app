@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
+// 🔴 แก้ไขบรรทัดนี้ ให้ถอยออกไปหาโฟลเดอร์ context
+import { AppProvider } from "../context/AppContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
