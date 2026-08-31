@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useApp } from '@/context/AppContext';
-import { ALL_PRODUCTS, Product } from '@/data/klookData';
+import { useApp } from '../context/AppContext';
+import { ALL_PRODUCTS, Product } from '../data/klookData';
 import { 
   Search, Globe, ShoppingBag, Star, MapPin, Compass, Ticket, Hotel, Train, 
   Palmtree, Car, Wifi, X, Mail, Lock, User, LogOut, CheckCircle2, Calendar, CreditCard, ChevronRight
