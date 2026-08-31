@@ -236,7 +236,7 @@ export default function Home() {
         </>
       )}
 
-      {/* TAB 2: MY BOOKINGS PAGE (หน้าดูรายการจองที่ชำระเงินแล้ว) */}
+      {/* TAB 2: MY BOOKINGS PAGE */}
       {activeTab === 'bookings' && (
         <section className="max-w-4xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">ประวัติการสั่งซื้อและวอเชอร์ของคุณ</h2>
