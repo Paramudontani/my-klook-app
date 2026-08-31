@@ -1,3 +1,6 @@
+โค้ดไฟล์ `page.tsx` ที่สมบูรณ์และได้รับการแก้ไขโครงสร้าง JSX ให้เปิด-ปิดแท็กถูกต้องทุกจุดครับ:
+
+```tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -446,3 +449,5 @@ export default function Home() {
     </div>
   );
 }
+
+```
