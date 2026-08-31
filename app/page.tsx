@@ -139,9 +139,6 @@ export default function Home() {
       {/* TAB 1: HOME PAGE */}
       {activeTab === 'home' && (
         <>
-        {/* TAB 1: HOME PAGE */}
-      {activeTab === 'home' && (
-        <>
           {/* HERO BANNER & SEARCH BAR */}
           <section className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white py-14 px-4 text-center">
             <div className="max-w-4xl mx-auto space-y-4">
@@ -245,6 +242,7 @@ export default function Home() {
           </section>
         </>
       )}
+
       {/* TAB 2: MY BOOKINGS PAGE */}
       {activeTab === 'bookings' && (
         <section className="max-w-4xl mx-auto px-4 py-10">
